@@ -24,7 +24,7 @@ PID_B=0
 REAL_IP=$(curl -s api.ipify.org)
 PROXY_PREFIX="socks://${PROXY_AUTH:+${PROXY_AUTH}@}"
 PROXY_URL="$PROXY_PREFIX$REAL_IP:$PROXY_PORT"
-HTTP_URL="http://$REAL_IP/$HTTP_SLUG"
+HTTP_URL="http://$REAL_IP:$HTTP_PORT/$HTTP_SLUG"
 
 printf "\n xray-knife-auto\n"
 printf " - Hostname: %s\n" "$(hostname)"
