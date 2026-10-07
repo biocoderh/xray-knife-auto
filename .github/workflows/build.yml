@@ -2,8 +2,8 @@ name: Build and Push Container
 
 on:
   push:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
+    branches:
+      - "master"
 
 jobs:
   build:
