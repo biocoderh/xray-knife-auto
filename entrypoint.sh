@@ -21,6 +21,25 @@ PORT_B=21172
 PID_A=0
 PID_B=0
 
+REAL_IP=$(curl -s api.ipify.org)
+PROXY_PREFIX="socks://${PROXY_AUTH:+${PROXY_AUTH}@}"
+PROXY_URL="$PROXY_PREFIX$REAL_IP:$PROXY_PORT"
+HTTP_URL="http://$REAL_IP/$HTTP_SLUG"
+
+BOLD="\033[1m"
+GREEN="\033[32m"
+CYAN="\033[36m"
+YELLOW="\033[33m"
+RESET="\033[0m"
+
+echo -e "${BOLD}${CYAN}==================================================${RESET}"
+echo -e "${BOLD}${CYAN}                  XRAY-KNIFE-AUTO                 ${RESET}"
+echo -e "${BOLD}${CYAN}==================================================${RESET}"
+printf "  %-15s : ${GREEN}%s${RESET}\n" "External IP" "$REAL_IP"
+printf "  %-15s : ${YELLOW}%s${RESET}\n" "Proxy URL"   "$PROXY_URL"
+printf "  %-15s : ${CYAN}%s${RESET}\n"   "HTTP URL"    "$HTTP_URL"
+echo -e "${BOLD}${CYAN}==================================================${RESET}\n"
+
 shutdown() {
     printf "Shutting down...\n"
     [ "$PID_A" -gt 0 ] && kill -TERM "$PID_A" 2>/dev/null || true
@@ -90,8 +109,6 @@ haproxy_cmd() {
 haproxy -f "$HAPROXY_DIR/haproxy.cfg" -p "$HAPROXY_DIR/haproxy.pid" -D
 printf "Listening: PROXY port %s, HTTP port %s \n" "$PROXY_PORT" "$HTTP_PORT"
 
-INBOUND_PREFIX="socks://${PROXY_AUTH:+${PROXY_AUTH}@}127.0.0.1:"
-
 while true; do
     curl -sSL "$SOURCE_URL" -o "$WORKDIR/source.txt"
     "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
@@ -116,7 +133,7 @@ while true; do
         --port "$NEXT_PORT" --threads "$THREADS" --mdelay "$MAX_DELAY" \
         --rotate 0 --blacklist-strikes 3 \
         --health-check "$CHECK_INTERVAL" --health-url "$CHECK_URL" \
-        --inbound-config "$INBOUND_PREFIX$NEXT_PORT#Listener" --quiet &
+        --inbound-config "${PROXY_PREFIX}127.0.0.1:$NEXT_PORT#Listener" --quiet &
     NEXT_PID=$!
 
     haproxy_cmd "set server pool/$NEXT_PORT state ready"
