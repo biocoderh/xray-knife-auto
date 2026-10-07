@@ -14,13 +14,13 @@ RUN ARCH=$(uname -m) && \
     fi && \
     curl -sSL "https://github.com/lilendian0x00/xray-knife/releases/latest/download/${ZIP_NAME}" -o /tmp/xray-knife.zip && \
     unzip -q /tmp/xray-knife.zip -d /tmp/xray-knife && \
-    mv /tmp/xray-knife/xray-knife /app/xray-knife && \
-    chmod +x /app/xray-knife && \
+    mv /tmp/xray-knife/xray-knife /usr/local/bin/xray-knife && \
+    chmod +x /usr/local/bin/xray-knife && \
     rm -rf /tmp/xray-knife.zip /tmp/xray-knife
 
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-EXPOSE 21169 21170
+EXPOSE 21170 21180
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

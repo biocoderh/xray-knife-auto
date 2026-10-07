@@ -10,15 +10,16 @@
 
 | Variable | Default | Description |
 |---|---|---|
-| `HTTP_PORT` | `21169` | Port for the HTTP server, return plain/text configs |
 | `PROXY_PORT` | `21170` | Port for the proxy server |
-| `PROXY_CREDENTIALS` |  | Proxy inbound user:pass base64 encoded, empty no auth |
-| `THREADS` | `50` | Number of threads |
-| `MAX_DELAY` | `1000` | Maximum allowed delay (ms) |
+| `PROXY_AUTH` |  | Proxy inbound user:pass base64 encoded, empty no auth |
+| `HTTP_PORT` | `21180` | Port for the HTTP server, return plain/text configs |
+| `HTTP_SLUG` |  | Serve configs file behind HTTP path for security |
 | `CHECK_INTERVAL` | `1` | Proxy check interval in seconds |
 | `CHECK_URL` | `https://www.linkedin.com/robots.txt` | Proxy check URL to fetch |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
 | `SOURCE_URL` | https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt | Source URL |
+| `MAX_DELAY` | `1000` | Maximum allowed delay (ms) |
+| `THREADS` | `50` | Number of threads |
 
 ## Deployment (Podman Quadlet)
 
@@ -35,18 +36,18 @@ ContainerName=xray-knife-auto
 AutoUpdate=registry
 HostName=%H
 Timezone=local
-PublishPort=21169:21169
 PublishPort=21170:21170
-Volume=xray-knife-auto:/var/www:Z
-Environment=HTTP_PORT=21169
+PublishPort=21180:21180
 Environment=PROXY_PORT=21170
-Environment=PROXY_CREDENTIALS=
-Environment=THREADS=50
-Environment=MAX_DELAY=1000
+Environment=PROXY_AUTH=
+Environment=HTTP_PORT=21180
+Environment=HTTP_SLUG=
 Environment=CHECK_INTERVAL=1
 Environment=CHECK_URL=https://www.linkedin.com/robots.txt
 Environment=UPDATE_INTERVAL=1h
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
+Environment=MAX_DELAY=1000
+Environment=THREADS=50
 
 [Service]
 Restart=on-failure
