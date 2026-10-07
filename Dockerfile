@@ -21,6 +21,6 @@ RUN ARCH=$(uname -m) && \
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-EXPOSE 21170
+EXPOSE 21169 21170
 
 ENTRYPOINT ["/app/entrypoint.sh"]

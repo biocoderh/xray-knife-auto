@@ -58,8 +58,8 @@ frontend proxy
     default_backend pool
 
 backend pool
-    server a 127.0.0.1:$PORT_A check disabled
-    server b 127.0.0.1:$PORT_B check disabled
+    server a *:$PORT_A check disabled
+    server b *:$PORT_B check disabled
 EOF
 
 haproxy -f "$HAPROXY_CFG" -p "$HAPROXY_PID" -D
@@ -67,7 +67,7 @@ printf "\nListening ports HTTP %s and TCP %s" "$CONFIGS_PORT" "$PROXY_PORT"
 
 while true; do
     curl -sSL "$SOURCE_URL" -o "$WORK_DIR/source.txt"
-    ./xray-knife http -f "$WORK_DIR/source.txt" -o "$CONFIGS_TXT" --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort > "$WORK_DIR/xray-knife-http.log" 2>&1
+    ./xray-knife http -f "$WORK_DIR/source.txt" -o "$CONFIGS_TXT" --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort || true > "$WORK_DIR/xray-knife-http.log" 2>&1
     sed -i "1i # $(date '+%Y-%m-%d %H:%M:%S')" "$CONFIGS_TXT"
 
     if [ "$PID_A" -eq 0 ]; then
