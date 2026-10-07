@@ -58,7 +58,7 @@ haproxy_cmd() {
     echo "$1" | socat stdio /var/lib/haproxy/admin.sock >/dev/null
 }
 
-haproxy
+haproxy -f /etc/haproxy/haproxy.cfg -D
 printf "Listening TCP port %s \n" "$PROXY_PORT"
 
 while true; do
