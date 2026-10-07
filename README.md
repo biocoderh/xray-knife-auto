@@ -13,6 +13,7 @@
 | `CONFIGS_PORT` | `21169` | Port for the HTTP server |
 | `PROXY_PORT` | `21170` | Port for the proxy server |
 | `THREADS` | `50` | Number of threads |
+| `MAX_DELAY` | `300` | Maximum allowed delay (ms) |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
 | `SOURCE_URL` | https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt | Source URL |
 
@@ -37,6 +38,7 @@ Volume=xray-knife-auto:/var/www:Z
 Environment=CONFIGS_PORT=21169
 Environment=PROXY_PORT=21170
 Environment=THREADS=50
+Environment=MAX_DELAY=50
 Environment=UPDATE_INTERVAL=1h
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
 
@@ -48,8 +50,9 @@ TimeoutStartSec=300
 WantedBy=default.target
 ```
 
-Reload and start:
+Reload and restart:
 ```bash
 systemctl --user daemon-reload
-systemctl --user start xray-knife-auto
+podman pull ghcr.io/biocoderh/xray-knife-auto:latest
+systemctl --user restart xray-knife-auto
 ```

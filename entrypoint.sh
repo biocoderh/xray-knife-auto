@@ -3,6 +3,7 @@
 CONFIGS_PORT="${CONFIGS_PORT:-21169}"
 PROXY_PORT="${PROXY_PORT:-21170}"
 THREADS="${THREADS:-50}"
+MAX_DELAY="${MAX_DELAY:-300}"
 INTERVAL="${INTERVAL:-1h}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
 
@@ -65,14 +66,12 @@ haproxy -f "$HAPROXY_CFG" -p "$HAPROXY_PID" -D
 printf "\nListening ports HTTP %s and TCP %s" "$CONFIGS_PORT" "$PROXY_PORT"
 
 while true; do
-    printf "\nStart loop at %s, interval %s" "$(date)" "$INTERVAL"
-
     curl -sSL "$SOURCE_URL" -o "$WORK_DIR/source.txt"
-    ./xray-knife http -f "$WORK_DIR/source.txt" -o "$CONFIGS_TXT" --threads "$THREADS" --speedtest --sort > "$WORK_DIR/xray-knife-http.log" 2>&1
+    ./xray-knife http -f "$WORK_DIR/source.txt" -o "$CONFIGS_TXT" --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort > "$WORK_DIR/xray-knife-http.log" 2>&1
     sed -i "1i # $(date '+%Y-%m-%d %H:%M:%S')" "$CONFIGS_TXT"
 
     if [ "$PID_A" -eq 0 ]; then
-        ./xray-knife proxy inbound -f "$CONFIGS_TXT" --port "$PORT_A" --threads "$THREADS" --rotate 0 --health-check 1 --blacklist-strikes 3 --mdelay 300 > "$WORK_DIR/xray-knife-proxy-A.log" 2>&1 &
+        ./xray-knife proxy inbound -f "$CONFIGS_TXT" --port "$PORT_A" --threads "$THREADS" --mdelay "$MAX_DELAY" --rotate 0 --health-check 1 --blacklist-strikes 3 > "$WORK_DIR/xray-knife-proxy-A.log" 2>&1 &
         PID_A=$!
         echo "set server pool/a state ready" | socat stdio "$HAPROXY_SOCK" >/dev/null
         if [ "$PID_B" -gt 0 ]; then
@@ -84,7 +83,7 @@ while true; do
             ) &
         fi
     else
-        ./xray-knife proxy inbound -f "$CONFIGS_TXT" --port "$PORT_B" --threads "$THREADS" --rotate 0 --health-check 1 --blacklist-strikes 3 --mdelay 300 > "$WORK_DIR/xray-knife-proxy-B.log" 2>&1 &
+        ./xray-knife proxy inbound -f "$CONFIGS_TXT" --port "$PORT_B" --threads "$THREADS" --mdelay "$MAX_DELAY" --rotate 0 --health-check 1 --blacklist-strikes 3 > "$WORK_DIR/xray-knife-proxy-B.log" 2>&1 &
         PID_B=$!
         echo "set server pool/b state ready" | socat stdio "$HAPROXY_SOCK" >/dev/null
         if [ "$PID_A" -gt 0 ]; then
