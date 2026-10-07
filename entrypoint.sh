@@ -24,7 +24,7 @@ shutdown() {
 
 trap shutdown INT TERM EXIT
 
-echo '# Starting...' > "$CONFIGS_TXT"
+echo '# Initialization...' > "$CONFIGS_TXT"
 darkhttpd "$CONFIGS_TXT" --single-file --port "$HTTP_PORT" --chroot --uid darkhttpd --daemon
 printf "Listening HTTP port %s \n" "$HTTP_PORT"
 
@@ -66,9 +66,9 @@ while true; do
     ./xray-knife http -f "/tmp/source.txt" -o "$CONFIGS_TXT" \
         --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort || true
 
-    # Remove empty lines and add timestamp
     sed -i '/^$/d' "$CONFIGS_TXT"
     sed -i "1i # $(date)\n" "$CONFIGS_TXT"
+    echo >> "$CONFIGS_TXT"
 
     SOURCE_COUNT=$(grep -v '^[[:space:]]*#' "/tmp/source.txt" | grep -c '.')
     CONFIGS_COUNT=$(grep -v '^[[:space:]]*#' "$CONFIGS_TXT" | grep -c '.')
