@@ -12,6 +12,7 @@
 |---|---|---|
 | `HTTP_PORT` | `21169` | Port for the HTTP server, return plain/text configs |
 | `PROXY_PORT` | `21170` | Port for the proxy server |
+| `PROXY_CREDENTIALS` | `` | Proxy inbound user:pass base64 encoded, empty no auth |
 | `THREADS` | `50` | Number of threads |
 | `MAX_DELAY` | `600` | Maximum allowed delay (ms) |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |

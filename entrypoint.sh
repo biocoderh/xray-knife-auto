@@ -74,11 +74,14 @@ while true; do
     CONFIGS_COUNT=$(grep -v '^[[:space:]]*#' "$CONFIGS_TXT" | grep -c '.')
     printf "Update configs: %s passed from %s total \n" "$CONFIGS_COUNT" "$SOURCE_COUNT"
 
+    INBOUND_PART="socks://0.0.0.0:"
+    [ -z "$PROXY_CREDENTIALS" ] || INBOUND_PART="socks://$PROXY_CREDENTIALS@0.0.0.0:"
+
     if [ "$PID_A" -eq 0 ]; then
         ./xray-knife proxy inbound -f "$CONFIGS_TXT" \
             --port "$PORT_A" --threads "$THREADS" --mdelay "$MAX_DELAY" \
             --rotate 0 --health-check 1 --blacklist-strikes 3 \
-            --inbound-config "socks://0.0.0.0:$PORT_A#Listener" --quiet &
+            --inbound-config "$INBOUND_PART$PORT_A#Listener" --quiet &
         PID_A=$!
         haproxy_cmd "set server pool/a state ready"
         if [ "$PID_B" -gt 0 ]; then
@@ -92,7 +95,7 @@ while true; do
         ./xray-knife proxy inbound -f "$CONFIGS_TXT" \
             --port "$PORT_B" --threads "$THREADS" --mdelay "$MAX_DELAY" \
             --rotate 0 --health-check 1 --blacklist-strikes 3 \
-            --inbound-config "socks://0.0.0.0:$PORT_B#Listener" --quiet &
+            --inbound-config "$INBOUND_PART$PORT_B#Listener" --quiet &
         PID_B=$!
         haproxy_cmd "set server pool/b state ready"
         if [ "$PID_A" -gt 0 ]; then
