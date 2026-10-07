@@ -70,7 +70,14 @@ while true; do
     ./xray-knife http -f "$WORK_DIR/source.txt" -o "$CONFIGS_TXT" \
         --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort \
         > "$WORK_DIR/xray-knife-http.log" 2>&1 || true
-    sed -i "1i # $(date)" "$CONFIGS_TXT"
+
+    # Remove empty lines and add timestamp
+    sed -i '/^$/d' "$CONFIGS_TXT"
+    sed -i "1i # $(date)\n" "$CONFIGS_TXT"
+
+    SOURCE_COUNT=$(grep -v '^[[:space:]]*#' "$WORK_DIR/source.txt" | grep -c '.')
+    CONFIGS_COUNT=$(grep -v '^[[:space:]]*#' "$CONFIGS_TXT" | grep -c '.')
+    printf "Update configs: %s passed from %s total \n" "$CONFIGS_COUNT" "$SOURCE_COUNT"
 
     if [ "$PID_A" -eq 0 ]; then
         ./xray-knife proxy inbound -f "$CONFIGS_TXT" \
