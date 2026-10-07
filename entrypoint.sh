@@ -22,13 +22,14 @@ shutdown() {
     [ "$PID_B" -gt 0 ] && kill -TERM "$PID_B" 2>/dev/null || true
     [ -f /var/run/haproxy.pid ] && kill -TERM "$(cat /var/run/haproxy.pid)" 2>/dev/null || true
     [ -f /var/www/darkhttpd.pid ] && kill -TERM "$(cat /var/www/darkhttpd.pid)" 2>/dev/null || true
+    rm -f /var/run/haproxy.pid /var/www/darkhttpd.pid
     exit 0
 }
 
 trap shutdown INT TERM EXIT
 
 echo '# Initialization...' > "$CONFIGS_TXT"
-darkhttpd "$CONFIGS_TXT" --single-file --port "$HTTP_PORT" --chroot --uid darkhttpd --pidfile /var/www/darkhttpd.pid --daemon
+darkhttpd "$CONFIGS_TXT" --single-file --port "$HTTP_PORT" --chroot --uid darkhttpd --pidfile /darkhttpd.pid --daemon
 printf "Listening HTTP port %s \n" "$HTTP_PORT"
 
 cat << EOF > /etc/haproxy/haproxy.cfg
