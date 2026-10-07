@@ -4,7 +4,9 @@ HTTP_PORT="${HTTP_PORT:-21169}"
 PROXY_PORT="${PROXY_PORT:-21170}"
 THREADS="${THREADS:-50}"
 MAX_DELAY="${MAX_DELAY:-600}"
-INTERVAL="${INTERVAL:-1h}"
+CHECK_INTERVAL="${CHECK_INTERVAL:-1}"
+CHECK_URL="${CHECK_URL:-https://www.linkedin.com/robots.txt}"
+UPDATE_INTERVAL="${UPDATE_INTERVAL:-1h}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
 
 CONFIGS_TXT="/var/www/configs.txt"
@@ -65,7 +67,7 @@ printf "Listening TCP port %s \n" "$PROXY_PORT"
 while true; do
     curl -sSL "$SOURCE_URL" -o "/tmp/source.txt"
     ./xray-knife http -f "/tmp/source.txt" -o "$CONFIGS_TXT" \
-        --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort || true
+        --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" --speedtest --sort || true
 
     sed -i '/^$/d' "$CONFIGS_TXT"
     sed -i "1i # $(date)\n" "$CONFIGS_TXT"
@@ -81,7 +83,8 @@ while true; do
     if [ "$PID_A" -eq 0 ]; then
         ./xray-knife proxy inbound -f "$CONFIGS_TXT" \
             --port "$PORT_A" --threads "$THREADS" --mdelay "$MAX_DELAY" \
-            --rotate 0 --health-check 1 --blacklist-strikes 3 \
+            --rotate 0 --blacklist-strikes 3 \
+            --health-check "$CHECK_INTERVAL" --health-url "$CHECK_URL" \
             --inbound-config "$INBOUND_PART$PORT_A#Listener" --quiet &
         PID_A=$!
         haproxy_cmd "set server pool/a state ready"
@@ -95,7 +98,8 @@ while true; do
     else
         ./xray-knife proxy inbound -f "$CONFIGS_TXT" \
             --port "$PORT_B" --threads "$THREADS" --mdelay "$MAX_DELAY" \
-            --rotate 0 --health-check 1 --blacklist-strikes 3 \
+            --rotate 0 --blacklist-strikes 3 \
+            --health-check "$CHECK_INTERVAL" --health-url "$CHECK_URL" \
             --inbound-config "$INBOUND_PART$PORT_B#Listener" --quiet &
         PID_B=$!
         haproxy_cmd "set server pool/b state ready"
@@ -108,5 +112,5 @@ while true; do
         fi
     fi
 
-    sleep "$INTERVAL"
+    sleep "$UPDATE_INTERVAL"
 done

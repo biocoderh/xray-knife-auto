@@ -15,6 +15,8 @@
 | `PROXY_CREDENTIALS` |  | Proxy inbound user:pass base64 encoded, empty no auth |
 | `THREADS` | `50` | Number of threads |
 | `MAX_DELAY` | `600` | Maximum allowed delay (ms) |
+| `CHECK_INTERVAL` | `1` | Proxy check interval in seconds |
+| `CHECK_URL` | `https://www.linkedin.com/robots.txt` | Proxy check URL to fetch |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
 | `SOURCE_URL` | https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt | Source URL |
 
@@ -41,6 +43,8 @@ Environment=PROXY_PORT=21170
 Environment=PROXY_CREDENTIALS=
 Environment=THREADS=50
 Environment=MAX_DELAY=600
+Environment=CHECK_INTERVAL=1
+Environment=CHECK_URL=https://www.linkedin.com/robots.txt`
 Environment=UPDATE_INTERVAL=1h
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
 
