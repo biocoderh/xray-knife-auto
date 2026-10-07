@@ -26,19 +26,10 @@ PROXY_PREFIX="socks://${PROXY_AUTH:+${PROXY_AUTH}@}"
 PROXY_URL="$PROXY_PREFIX$REAL_IP:$PROXY_PORT"
 HTTP_URL="http://$REAL_IP/$HTTP_SLUG"
 
-BOLD="\033[1m"
-GREEN="\033[32m"
-CYAN="\033[36m"
-YELLOW="\033[33m"
-RESET="\033[0m"
-
-echo -e "${BOLD}${CYAN}==================================================${RESET}"
-echo -e "${BOLD}${CYAN}                  XRAY-KNIFE-AUTO                 ${RESET}"
-echo -e "${BOLD}${CYAN}==================================================${RESET}"
-printf "  %-15s : ${GREEN}%s${RESET}\n" "External IP" "$REAL_IP"
-printf "  %-15s : ${YELLOW}%s${RESET}\n" "Proxy URL"   "$PROXY_URL"
-printf "  %-15s : ${CYAN}%s${RESET}\n"   "HTTP URL"    "$HTTP_URL"
-echo -e "${BOLD}${CYAN}==================================================${RESET}\n"
+printf "\n\nXRAY-KNIFE-AUTO\n"
+printf " - External IP: %s\n" "$REAL_IP"
+printf " - Proxy URL: %s\n" "$PROXY_URL"
+printf " - HTTP URL: %s\n\n" "$HTTP_URL"
 
 shutdown() {
     printf "Shutting down...\n"
