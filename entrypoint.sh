@@ -19,7 +19,7 @@ PID_A=0
 PID_B=0
 
 shutdown() {
-    printf "\nShutting down..."
+    printf "Shutting down...\n"
 
     [ "$PID_A" -gt 0 ] && kill -TERM "$PID_A" 2>/dev/null || true
     [ "$PID_B" -gt 0 ] && kill -TERM "$PID_B" 2>/dev/null || true
@@ -35,6 +35,8 @@ trap shutdown INT TERM EXIT
 mkdir -p "$WORK_DIR"
 
 echo '# Starting...' > "$CONFIGS_TXT"
+darkhttpd "$CONFIGS_TXT" --single-file --port "$CONFIGS_PORT" --chroot --uid darkhttpd --daemon --log "$WORK_DIR/darkhttpd.log"
+printf "Listening HTTP port %s \n" "$CONFIGS_PORT"
 
 cat << EOF > "$HAPROXY_CFG"
 global
@@ -51,11 +53,6 @@ defaults
     timeout client  2h
     timeout server  2h
 
-frontend configs
-    bind *:$CONFIGS_PORT
-    mode http
-    http-request return status 200 content-type "text/plain" file "$CONFIGS_TXT"
-
 frontend proxy
     bind *:$PROXY_PORT
     default_backend pool
@@ -66,15 +63,21 @@ backend pool
 EOF
 
 haproxy -f "$HAPROXY_CFG" -p "$HAPROXY_PID" -D
-printf "\nListening ports HTTP %s and TCP %s" "$CONFIGS_PORT" "$PROXY_PORT"
+printf "Listening TCP port %s \n" "$PROXY_PORT"
 
 while true; do
     curl -sSL "$SOURCE_URL" -o "$WORK_DIR/source.txt"
-    ./xray-knife http -f "$WORK_DIR/source.txt" -o "$CONFIGS_TXT" --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort > "$WORK_DIR/xray-knife-http.log" 2>&1 || true
-    sed -i "1i # $(date '+%Y-%m-%d %H:%M:%S')" "$CONFIGS_TXT"
+    ./xray-knife http -f "$WORK_DIR/source.txt" -o "$CONFIGS_TXT" \
+        --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort \
+        > "$WORK_DIR/xray-knife-http.log" 2>&1 || true
+    sed -i "1i # $(date)" "$CONFIGS_TXT"
 
     if [ "$PID_A" -eq 0 ]; then
-        ./xray-knife proxy inbound -f "$CONFIGS_TXT" --port "$PORT_A" --threads "$THREADS" --mdelay "$MAX_DELAY" --rotate 0 --health-check 1 --blacklist-strikes 3 > "$WORK_DIR/xray-knife-proxy-A.log" 2>&1 &
+        ./xray-knife proxy inbound -f "$CONFIGS_TXT" \
+            --port "$PORT_A" --threads "$THREADS" --mdelay "$MAX_DELAY" \
+            --rotate 0 --health-check 1 --blacklist-strikes 3 \
+            --inbound-config "socks://0.0.0.0:$PORT_A#Listener" \
+            > "$WORK_DIR/xray-knife-proxy-A.log" 2>&1 &
         PID_A=$!
         echo "set server pool/a state ready" | socat stdio "$HAPROXY_SOCK" >/dev/null
         if [ "$PID_B" -gt 0 ]; then
@@ -85,7 +88,11 @@ while true; do
             PID_B=0
         fi
     else
-        ./xray-knife proxy inbound -f "$CONFIGS_TXT" --port "$PORT_B" --threads "$THREADS" --mdelay "$MAX_DELAY" --rotate 0 --health-check 1 --blacklist-strikes 3 > "$WORK_DIR/xray-knife-proxy-B.log" 2>&1 &
+        ./xray-knife proxy inbound -f "$CONFIGS_TXT" \
+            --port "$PORT_B" --threads "$THREADS" --mdelay "$MAX_DELAY" \
+            --rotate 0 --health-check 1 --blacklist-strikes 3 \
+            --inbound-config "socks://0.0.0.0:$PORT_B#Listener" \
+            > "$WORK_DIR/xray-knife-proxy-B.log" 2>&1 &
         PID_B=$!
         echo "set server pool/b state ready" | socat stdio "$HAPROXY_SOCK" >/dev/null
         if [ "$PID_A" -gt 0 ]; then
