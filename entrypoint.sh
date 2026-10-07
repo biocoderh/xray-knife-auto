@@ -33,10 +33,13 @@ shutdown() {
 
 trap shutdown INT TERM EXIT
 
+echo '# Initialization...' > "$CONFIGS_FILE"
+chmod 644 "$CONFIGS_FILE"
+
 mkdir -p "$DARKHTTPD_DIR"
 chown -R darkhttpd:www-data "$DARKHTTPD_DIR"
-echo '# Initialization...' > "$CONFIGS_FILE"
-darkhttpd "$DARKHTTPD_DIR" --single-file "$CONFIGS_FILE" --addr 127.0.0.1 --port "$DARKHTTPD_PORT" \
+ln -s "$CONFIGS_FILE" "$DARKHTTPD_DIR/index.txt"
+darkhttpd "$DARKHTTPD_DIR/index.txt" --single-file --addr 127.0.0.1 --port "$DARKHTTPD_PORT" \
     --no-listing --hide-dotfiles --no-keepalive --no-server-id \
     --chroot --uid darkhttpd --gid darkhttpd \
     --daemon --pidfile "$DARKHTTPD_DIR/darkhttpd.pid"
