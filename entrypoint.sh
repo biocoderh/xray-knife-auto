@@ -26,7 +26,7 @@ shutdown() {
 
     [ -f "$HAPROXY_PID" ] && kill -TERM "$(cat "$HAPROXY_PID")" 2>/dev/null || true
 
-    rm -rdf "$WORK_DIR"
+    rm -rf "$WORK_DIR"
     exit 0
 }
 
@@ -40,6 +40,9 @@ cat << EOF > "$HAPROXY_CFG"
 global
     stats socket $HAPROXY_SOCK mode 600 level admin
     log stdout format raw local0
+    chroot /var/empty
+    user haproxy
+    group haproxy
 
 defaults
     log     global

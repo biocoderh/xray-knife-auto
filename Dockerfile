@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk add --no-cache curl bash ca-certificates tzdata unzip gcompat libc6-compat haproxy
+RUN apk add --no-cache curl bash ca-certificates tzdata unzip gcompat libc6-compat haproxy socat
 
 WORKDIR /app
 
