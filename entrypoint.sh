@@ -34,7 +34,7 @@ shutdown() {
 trap shutdown INT TERM EXIT
 
 mkdir -p "$DARKHTTPD_DIR"
-chown -R darkhttpd:darkhttpd "$DARKHTTPD_DIR"
+chown -R darkhttpd:www-data "$DARKHTTPD_DIR"
 echo '# Initialization...' > "$CONFIGS_FILE"
 darkhttpd "$DARKHTTPD_DIR" --single-file "$CONFIGS_FILE" --addr 127.0.0.1 --port "$DARKHTTPD_PORT" \
     --no-listing --hide-dotfiles --no-keepalive --no-server-id \
