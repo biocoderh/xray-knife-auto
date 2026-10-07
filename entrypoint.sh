@@ -42,7 +42,7 @@ ln -s "$CONFIGS_FILE" "$DARKHTTPD_DIR/index.txt"
 darkhttpd "$DARKHTTPD_DIR/index.txt" --single-file --addr 127.0.0.1 --port "$DARKHTTPD_PORT" \
     --no-listing --hide-dotfiles --no-keepalive --no-server-id \
     --chroot --uid darkhttpd --gid www-data \
-    --daemon --pidfile "$DARKHTTPD_DIR/darkhttpd.pid"
+    --daemon --pidfile "/darkhttpd.pid"
 
 mkdir -p "$HAPROXY_DIR"
 chown -R haproxy:haproxy "$HAPROXY_DIR"
