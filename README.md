@@ -10,10 +10,10 @@
 
 | Variable | Default | Description |
 |---|---|---|
-| `CONFIGS_PORT` | `21169` | Port for the HTTP server |
+| `HTTP_PORT` | `21169` | Port for the HTTP server, return plain/text configs |
 | `PROXY_PORT` | `21170` | Port for the proxy server |
 | `THREADS` | `50` | Number of threads |
-| `MAX_DELAY` | `300` | Maximum allowed delay (ms) |
+| `MAX_DELAY` | `600` | Maximum allowed delay (ms) |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
 | `SOURCE_URL` | https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt | Source URL |
 
@@ -35,10 +35,10 @@ Timezone=local
 PublishPort=21169:21169
 PublishPort=21170:21170
 Volume=xray-knife-auto:/var/www:Z
-Environment=CONFIGS_PORT=21169
+Environment=HTTP_PORT=21169
 Environment=PROXY_PORT=21170
 Environment=THREADS=50
-Environment=MAX_DELAY=50
+Environment=MAX_DELAY=600
 Environment=UPDATE_INTERVAL=1h
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
 

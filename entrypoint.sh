@@ -1,17 +1,13 @@
 #!/bin/sh -e
 
-CONFIGS_PORT="${CONFIGS_PORT:-21169}"
+HTTP_PORT="${HTTP_PORT:-21169}"
 PROXY_PORT="${PROXY_PORT:-21170}"
 THREADS="${THREADS:-50}"
-MAX_DELAY="${MAX_DELAY:-300}"
+MAX_DELAY="${MAX_DELAY:-600}"
 INTERVAL="${INTERVAL:-1h}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
 
-WORK_DIR="/tmp/xray-knife-auto"
-HAPROXY_SOCK="$WORK_DIR/haproxy.sock"
-HAPROXY_CFG="$WORK_DIR/haproxy.cfg"
-HAPROXY_PID="$WORK_DIR/haproxy.pid"
-CONFIGS_TXT="$WORK_DIR/configs.txt"
+CONFIGS_TXT="/var/www/configs.txt"
 
 PORT_A=21171
 PORT_B=21172
@@ -20,31 +16,27 @@ PID_B=0
 
 shutdown() {
     printf "Shutting down...\n"
-
     [ "$PID_A" -gt 0 ] && kill -TERM "$PID_A" 2>/dev/null || true
     [ "$PID_B" -gt 0 ] && kill -TERM "$PID_B" 2>/dev/null || true
-
-    [ -f "$HAPROXY_PID" ] && kill -TERM "$(cat "$HAPROXY_PID")" 2>/dev/null || true
-
-    rm -rf "$WORK_DIR"
+    [ -f /var/run/haproxy.pid ] && kill -TERM "$(cat /var/run/haproxy.pid)" 2>/dev/null || true
     exit 0
 }
 
 trap shutdown INT TERM EXIT
 
-mkdir -p "$WORK_DIR"
-
 echo '# Starting...' > "$CONFIGS_TXT"
-darkhttpd "$CONFIGS_TXT" --single-file --port "$CONFIGS_PORT" --chroot --uid darkhttpd --daemon --log "$WORK_DIR/darkhttpd.log"
-printf "Listening HTTP port %s \n" "$CONFIGS_PORT"
+darkhttpd "$CONFIGS_TXT" --single-file --port "$HTTP_PORT" --chroot --uid darkhttpd --daemon
+printf "Listening HTTP port %s \n" "$HTTP_PORT"
 
-cat << EOF > "$HAPROXY_CFG"
+cat << EOF > /etc/haproxy/haproxy.cfg
 global
-    stats socket $HAPROXY_SOCK mode 600 level admin
-    log stdout format raw local0
-    chroot /var/empty
+    stats socket /var/lib/haproxy/admin.sock mode 600 level admin
+    log /var/log/haproxy.log format raw local0
+    chroot /var/lib/haproxy
+    pidfile /var/run/haproxy.pid
     user haproxy
     group haproxy
+    daemon
 
 defaults
     log     global
@@ -62,20 +54,23 @@ backend pool
     server b 127.0.0.1:$PORT_B disabled
 EOF
 
-haproxy -f "$HAPROXY_CFG" -p "$HAPROXY_PID" -D
+haproxy_cmd() {
+    echo "$1" | socat stdio /var/lib/haproxy/admin.sock >/dev/null
+}
+
+haproxy
 printf "Listening TCP port %s \n" "$PROXY_PORT"
 
 while true; do
-    curl -sSL "$SOURCE_URL" -o "$WORK_DIR/source.txt"
-    ./xray-knife http -f "$WORK_DIR/source.txt" -o "$CONFIGS_TXT" \
-        --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort \
-        > "$WORK_DIR/xray-knife-http.log" 2>&1 || true
+    curl -sSL "$SOURCE_URL" -o "/tmp/source.txt"
+    ./xray-knife http -f "/tmp/source.txt" -o "$CONFIGS_TXT" \
+        --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort || true
 
     # Remove empty lines and add timestamp
     sed -i '/^$/d' "$CONFIGS_TXT"
     sed -i "1i # $(date)\n" "$CONFIGS_TXT"
 
-    SOURCE_COUNT=$(grep -v '^[[:space:]]*#' "$WORK_DIR/source.txt" | grep -c '.')
+    SOURCE_COUNT=$(grep -v '^[[:space:]]*#' "/tmp/source.txt" | grep -c '.')
     CONFIGS_COUNT=$(grep -v '^[[:space:]]*#' "$CONFIGS_TXT" | grep -c '.')
     printf "Update configs: %s passed from %s total \n" "$CONFIGS_COUNT" "$SOURCE_COUNT"
 
@@ -83,14 +78,13 @@ while true; do
         ./xray-knife proxy inbound -f "$CONFIGS_TXT" \
             --port "$PORT_A" --threads "$THREADS" --mdelay "$MAX_DELAY" \
             --rotate 0 --health-check 1 --blacklist-strikes 3 \
-            --inbound-config "socks://0.0.0.0:$PORT_A#Listener" \
-            > "$WORK_DIR/xray-knife-proxy-A.log" 2>&1 &
+            --inbound-config "socks://0.0.0.0:$PORT_A#Listener" --quiet &
         PID_A=$!
-        echo "set server pool/a state ready" | socat stdio "$HAPROXY_SOCK" >/dev/null
+        haproxy_cmd "set server pool/a state ready"
         if [ "$PID_B" -gt 0 ]; then
-            echo "set server pool/b state drain" | socat stdio "$HAPROXY_SOCK" >/dev/null
+            haproxy_cmd "set server pool/b state drain"
             sleep 30
-            echo "set server pool/b state maint" | socat stdio "$HAPROXY_SOCK" >/dev/null
+            haproxy_cmd "set server pool/b state maint"
             kill -TERM "$PID_B" 2>/dev/null || true
             PID_B=0
         fi
@@ -98,17 +92,17 @@ while true; do
         ./xray-knife proxy inbound -f "$CONFIGS_TXT" \
             --port "$PORT_B" --threads "$THREADS" --mdelay "$MAX_DELAY" \
             --rotate 0 --health-check 1 --blacklist-strikes 3 \
-            --inbound-config "socks://0.0.0.0:$PORT_B#Listener" \
-            > "$WORK_DIR/xray-knife-proxy-B.log" 2>&1 &
+            --inbound-config "socks://0.0.0.0:$PORT_B#Listener" --quiet &
         PID_B=$!
-        echo "set server pool/b state ready" | socat stdio "$HAPROXY_SOCK" >/dev/null
+        haproxy_cmd "set server pool/b state ready"
         if [ "$PID_A" -gt 0 ]; then
-            echo "set server pool/a state drain" | socat stdio "$HAPROXY_SOCK" >/dev/null
+            haproxy_cmd "set server pool/a state drain"
             sleep 30
-            echo "set server pool/a state maint" | socat stdio "$HAPROXY_SOCK" >/dev/null
+            haproxy_cmd "set server pool/a state maint"
             kill -TERM "$PID_A" 2>/dev/null || true
             PID_A=0
         fi
     fi
+
     sleep "$INTERVAL"
 done
