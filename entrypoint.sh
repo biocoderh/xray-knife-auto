@@ -41,6 +41,7 @@ global
     user haproxy
     group haproxy
     daemon
+    maxconn 4096
 
 defaults
     log     global
