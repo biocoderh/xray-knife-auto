@@ -44,7 +44,7 @@ Environment=PROXY_CREDENTIALS=
 Environment=THREADS=50
 Environment=MAX_DELAY=600
 Environment=CHECK_INTERVAL=1
-Environment=CHECK_URL=https://www.linkedin.com/robots.txt`
+Environment=CHECK_URL=https://www.linkedin.com/robots.txt
 Environment=UPDATE_INTERVAL=1h
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
 
