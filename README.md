@@ -12,7 +12,7 @@
 |---|---|---|
 | `HTTP_PORT` | `21169` | Port for the HTTP server, return plain/text configs |
 | `PROXY_PORT` | `21170` | Port for the proxy server |
-| `PROXY_CREDENTIALS` | `` | Proxy inbound user:pass base64 encoded, empty no auth |
+| `PROXY_CREDENTIALS` |  | Proxy inbound user:pass base64 encoded, empty no auth |
 | `THREADS` | `50` | Number of threads |
 | `MAX_DELAY` | `600` | Maximum allowed delay (ms) |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
@@ -38,6 +38,7 @@ PublishPort=21170:21170
 Volume=xray-knife-auto:/var/www:Z
 Environment=HTTP_PORT=21169
 Environment=PROXY_PORT=21170
+Environment=PROXY_CREDENTIALS=
 Environment=THREADS=50
 Environment=MAX_DELAY=600
 Environment=UPDATE_INTERVAL=1h
