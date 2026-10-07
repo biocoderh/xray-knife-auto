@@ -29,6 +29,7 @@ shutdown() {
 trap shutdown INT TERM EXIT
 
 echo '# Initialization...' > "$CONFIGS_TXT"
+touch /var/www/darkhttpd.pid && chown darkhttpd:darkhttpd touch /var/www/darkhttpd.pid
 darkhttpd "$CONFIGS_TXT" --single-file --port "$HTTP_PORT" --chroot --uid darkhttpd --pidfile /darkhttpd.pid --daemon
 printf "Listening HTTP port %s \n" "$HTTP_PORT"
 
