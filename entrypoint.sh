@@ -58,8 +58,8 @@ frontend proxy
     default_backend pool
 
 backend pool
-    server a *:$PORT_A check disabled
-    server b *:$PORT_B check disabled
+    server a 127.0.0.1:$PORT_A disabled
+    server b 127.0.0.1:$PORT_B disabled
 EOF
 
 haproxy -f "$HAPROXY_CFG" -p "$HAPROXY_PID" -D
@@ -67,7 +67,7 @@ printf "\nListening ports HTTP %s and TCP %s" "$CONFIGS_PORT" "$PROXY_PORT"
 
 while true; do
     curl -sSL "$SOURCE_URL" -o "$WORK_DIR/source.txt"
-    ./xray-knife http -f "$WORK_DIR/source.txt" -o "$CONFIGS_TXT" --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort || true > "$WORK_DIR/xray-knife-http.log" 2>&1
+    ./xray-knife http -f "$WORK_DIR/source.txt" -o "$CONFIGS_TXT" --threads "$THREADS" --mdelay "$MAX_DELAY" --speedtest --sort > "$WORK_DIR/xray-knife-http.log" 2>&1 || true
     sed -i "1i # $(date '+%Y-%m-%d %H:%M:%S')" "$CONFIGS_TXT"
 
     if [ "$PID_A" -eq 0 ]; then
@@ -76,11 +76,10 @@ while true; do
         echo "set server pool/a state ready" | socat stdio "$HAPROXY_SOCK" >/dev/null
         if [ "$PID_B" -gt 0 ]; then
             echo "set server pool/b state drain" | socat stdio "$HAPROXY_SOCK" >/dev/null
-            (
-                sleep 60
-                echo "set server pool/b state maint" | socat stdio "$HAPROXY_SOCK" >/dev/null
-                kill -TERM "$PID_B" 2>/dev/null || true
-            ) &
+            sleep 30
+            echo "set server pool/b state maint" | socat stdio "$HAPROXY_SOCK" >/dev/null
+            kill -TERM "$PID_B" 2>/dev/null || true
+            PID_B=0
         fi
     else
         ./xray-knife proxy inbound -f "$CONFIGS_TXT" --port "$PORT_B" --threads "$THREADS" --mdelay "$MAX_DELAY" --rotate 0 --health-check 1 --blacklist-strikes 3 > "$WORK_DIR/xray-knife-proxy-B.log" 2>&1 &
@@ -88,11 +87,10 @@ while true; do
         echo "set server pool/b state ready" | socat stdio "$HAPROXY_SOCK" >/dev/null
         if [ "$PID_A" -gt 0 ]; then
             echo "set server pool/a state drain" | socat stdio "$HAPROXY_SOCK" >/dev/null
-            (
-                sleep 60
-                echo "set server pool/a state maint" | socat stdio "$HAPROXY_SOCK" >/dev/null
-                kill -TERM "$PID_A" 2>/dev/null || true
-            ) &
+            sleep 30
+            echo "set server pool/a state maint" | socat stdio "$HAPROXY_SOCK" >/dev/null
+            kill -TERM "$PID_A" 2>/dev/null || true
+            PID_A=0
         fi
     fi
     sleep "$INTERVAL"
