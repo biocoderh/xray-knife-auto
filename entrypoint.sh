@@ -38,7 +38,7 @@ chmod 644 "$CONFIGS_FILE"
 
 mkdir -p "$DARKHTTPD_DIR"
 chown -R darkhttpd:www-data "$DARKHTTPD_DIR"
-ln -s "$CONFIGS_FILE" "$DARKHTTPD_DIR/index.txt"
+cp "$CONFIGS_FILE" "$DARKHTTPD_DIR/index.txt"
 darkhttpd "$DARKHTTPD_DIR/index.txt" --single-file --addr 127.0.0.1 --port "$DARKHTTPD_PORT" \
     --no-listing --hide-dotfiles --no-keepalive --no-server-id \
     --chroot --uid darkhttpd --gid www-data \
@@ -100,6 +100,7 @@ while true; do
     sed -i '/^$/d' "$CONFIGS_FILE"
     sed -i "1i # $(date)\n" "$CONFIGS_FILE"
     echo >> "$CONFIGS_FILE"
+    cp "$CONFIGS_FILE" "$DARKHTTPD_DIR/index.txt"
 
     SOURCE_COUNT=$(grep -v '^[[:space:]]*#' "$WORKDIR/source.txt" | grep -c '.')
     CONFIGS_COUNT=$(grep -v '^[[:space:]]*#' "$CONFIGS_FILE" | grep -c '.')
