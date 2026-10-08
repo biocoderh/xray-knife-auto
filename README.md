@@ -63,3 +63,55 @@ systemctl --user daemon-reload
 podman pull ghcr.io/biocoderh/xray-knife-auto:latest
 systemctl --user restart xray-knife-auto
 ```
+
+## Deployment (systemd service)
+
+Create `/etc/systemd/system/xray-knife-auto.service`:
+
+```ini
+[Unit]
+Description=xray-knife-auto
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+Restart=on-failure
+RestartSec=5s
+TimeoutStartSec=300
+
+# Remove any stopped/leftover container before start
+ExecStartPre=-/usr/bin/podman rm -f -i xray-knife-auto
+
+ExecStart=/usr/bin/podman run \
+    --name xray-knife-auto \
+    --rm \
+    --label io.containers.autoupdate=registry \
+    --hostname %H \
+    --tz local \
+    -p 21170:21170 \
+    -p 21180:21180 \
+    -e PROXY_PORT=21170 \
+    -e PROXY_AUTH= \
+    -e HTTP_PORT=21180 \
+    -e HTTP_SLUG= \
+    -e CHECK_INTERVAL=1 \
+    -e CHECK_URL=https://www.linkedin.com/robots.txt \
+    -e UPDATE_INTERVAL=1h \
+    -e SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt \
+    -e MAX_DELAY=1000 \
+    -e THREADS=50 \
+    ghcr.io/biocoderh/xray-knife-auto:latest
+
+ExecStop=/usr/bin/podman stop -t 10 xray-knife-auto
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Reload and enable:
+```bash
+systemctl daemon-reload
+podman pull ghcr.io/biocoderh/xray-knife-auto:latest
+systemctl enable --now xray-knife-auto
+```
