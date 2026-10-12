@@ -115,9 +115,11 @@ while true; do
         curl --connect-timeout 5 --max-time 15 --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 60 \
             -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt"
 
-        "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
+        grep -E '^(vless)://' "$WORKDIR/source.txt" > "$WORKDIR/vless.txt" || true
+
+        "$XRAY_KNIFE_BIN" http -f "$WORKDIR/vless.txt" -o "$CONFIGS_FILE" \
             --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" \
-            --prescan --protocol vless --speedtest --sort || true
+            --prescan --speedtest --sort || true
 
         sed -i '/^$/d' "$CONFIGS_FILE"
         sed -i "1i # $(date)\n" "$CONFIGS_FILE"
