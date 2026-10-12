@@ -22,7 +22,7 @@ PID_A=0
 PID_B=0
 
 REAL_IP=$(curl -s api.ipify.org)
-PROXY_PREFIX="socks://${PROXY_AUTH:+${PROXY_AUTH}@}"
+PROXY_PREFIX="socks5://${PROXY_AUTH:+${PROXY_AUTH}@}"
 PROXY_URL="$PROXY_PREFIX$REAL_IP:$PROXY_PORT"
 HTTP_URL="http://$REAL_IP:$HTTP_PORT/$HTTP_SLUG"
 
@@ -33,13 +33,14 @@ printf " - Proxy URL: %s\n" "$PROXY_URL"
 printf " - HTTP URL: %s\n\n" "$HTTP_URL"
 
 shutdown() {
+    EXIT_CODE=$?
     printf "Shutting down...\n"
     [ "$PID_A" -gt 0 ] && kill -TERM "$PID_A" 2>/dev/null || true
     [ "$PID_B" -gt 0 ] && kill -TERM "$PID_B" 2>/dev/null || true
     [ -f $HAPROXY_DIR/haproxy.pid ] && kill -TERM "$(cat $HAPROXY_DIR/haproxy.pid)" 2>/dev/null || true
     [ -f $DARKHTTPD_DIR/darkhttpd.pid ] && kill -TERM "$(cat $DARKHTTPD_DIR/darkhttpd.pid)" 2>/dev/null || true
     rm -f "$HAPROXY_DIR/haproxy.pid" "$DARKHTTPD_DIR/darkhttpd.pid"
-    exit 0
+    exit "$EXIT_CODE"
 }
 
 trap shutdown INT TERM EXIT
@@ -61,7 +62,7 @@ chown -R haproxy:haproxy "$HAPROXY_DIR"
 cat << EOF > "$HAPROXY_DIR/haproxy.cfg"
 global
     stats socket $HAPROXY_DIR/haproxy.sock mode 600 level admin
-    log $HAPROXY_DIR/haproxy.log format raw local0
+    log stdout format raw local0
     chroot $HAPROXY_DIR
     user haproxy
     group haproxy
@@ -102,7 +103,8 @@ haproxy -f "$HAPROXY_DIR/haproxy.cfg" -p "$HAPROXY_DIR/haproxy.pid" -D
 printf "Listening: PROXY port %s, HTTP port %s \n" "$PROXY_PORT" "$HTTP_PORT"
 
 while true; do
-    curl -fsSL --connect-timeout 15 --max-time 30 "$SOURCE_URL" -o "$WORKDIR/source.txt"
+    curl --connect-timeout 5 --max-time 15 --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 60 \
+        -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt"
     "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
         --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" --speedtest --sort || true
 
