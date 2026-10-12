@@ -102,7 +102,7 @@ haproxy -f "$HAPROXY_DIR/haproxy.cfg" -p "$HAPROXY_DIR/haproxy.pid" -D
 printf "Listening: PROXY port %s, HTTP port %s \n" "$PROXY_PORT" "$HTTP_PORT"
 
 while true; do
-    curl -sSL "$SOURCE_URL" -o "$WORKDIR/source.txt"
+    curl -fsSL --connect-timeout 15 --max-time 30 "$SOURCE_URL" -o "$WORKDIR/source.txt"
     "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
         --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" --speedtest --sort || true
 

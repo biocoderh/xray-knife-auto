@@ -51,7 +51,6 @@ Environment=THREADS=50
 
 [Service]
 Restart=on-failure
-TimeoutStartSec=300
 
 [Install]
 WantedBy=default.target
@@ -77,8 +76,6 @@ Wants=network-online.target
 [Service]
 Type=exec
 Restart=on-failure
-RestartSec=5s
-TimeoutStartSec=300
 
 # Remove any stopped/leftover container before start
 ExecStartPre=-/usr/bin/podman rm -f -i xray-knife-auto
