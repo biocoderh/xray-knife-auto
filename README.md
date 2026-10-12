@@ -18,10 +18,10 @@
 | `CHECK_URL` | `https://www.linkedin.com/robots.txt` | Proxy check URL to fetch |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
 | `SOURCE_URL` | https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt | Source URL |
-| `MAX_DELAY` | `1000` | Maximum allowed delay (ms) |
+| `MAX_DELAY` | `600` | Maximum allowed delay (ms) |
 | `THREADS` | `10` | Number of threads |
 
-## Deployment (Podman Quadlet)
+## Deployment unprivileged (Podman Quadlet)
 
 Create `~/.config/containers/systemd/xray-knife-auto.container`:
 
@@ -47,7 +47,7 @@ Environment=CHECK_INTERVAL=1
 Environment=CHECK_URL=https://www.linkedin.com/robots.txt
 Environment=UPDATE_INTERVAL=1h
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
-Environment=MAX_DELAY=1000
+Environment=MAX_DELAY=600
 Environment=THREADS=10
 
 [Service]
@@ -62,9 +62,10 @@ Reload and restart:
 systemctl --user daemon-reload
 podman pull ghcr.io/biocoderh/xray-knife-auto:latest
 systemctl --user restart xray-knife-auto
+journalctl --user -f -u xray-knife-auto.service -n 50
 ```
 
-## Deployment (systemd service)
+## Deployment root (systemd service)
 
 Create `/etc/systemd/system/xray-knife-auto.service`:
 
@@ -78,7 +79,6 @@ Wants=network-online.target
 Type=exec
 Restart=on-failure
 
-# Remove any stopped/leftover container before start
 ExecStartPre=-/usr/bin/podman rm -f -i xray-knife-auto
 
 ExecStart=/usr/bin/podman run \
@@ -87,9 +87,8 @@ ExecStart=/usr/bin/podman run \
     --label io.containers.autoupdate=registry \
     --hostname %H \
     --tz local \
+    --network host \
     -v xray-knife-auto-cache:/cache:Z \
-    -p 21170:21170 \
-    -p 21180:21180 \
     -e PROXY_PORT=21170 \
     -e PROXY_AUTH= \
     -e HTTP_PORT=21180 \
@@ -98,7 +97,7 @@ ExecStart=/usr/bin/podman run \
     -e CHECK_URL=https://www.linkedin.com/robots.txt \
     -e UPDATE_INTERVAL=1h \
     -e SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt \
-    -e MAX_DELAY=1000 \
+    -e MAX_DELAY=600 \
     -e THREADS=10 \
     ghcr.io/biocoderh/xray-knife-auto:latest
 
@@ -108,9 +107,11 @@ ExecStop=/usr/bin/podman stop -t 10 xray-knife-auto
 WantedBy=multi-user.target
 ```
 
-Reload and enable:
+Reload and restart:
 ```bash
 systemctl daemon-reload
 podman pull ghcr.io/biocoderh/xray-knife-auto:latest
-systemctl enable --now xray-knife-auto
+systemctl enable xray-knife-auto
+systemctl restart xray-knife-auto
+journalctl -f -u xray-knife-auto.service -n 50
 ```
