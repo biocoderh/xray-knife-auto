@@ -7,7 +7,7 @@ CHECK_URL="${CHECK_URL:-https://www.linkedin.com/robots.txt}"
 UPDATE_INTERVAL="${UPDATE_INTERVAL:-1h}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
 THREADS="${THREADS:-10}"
-MAX_DELAY="${MAX_DELAY:-300}"
+MAX_DELAY="${MAX_DELAY:-1000}"
 
 CACHEDIR="/cache"
 WORKDIR="/app"
