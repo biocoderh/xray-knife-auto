@@ -6,9 +6,10 @@ CHECK_INTERVAL="${CHECK_INTERVAL:-1}"
 CHECK_URL="${CHECK_URL:-https://www.linkedin.com/robots.txt}"
 UPDATE_INTERVAL="${UPDATE_INTERVAL:-1h}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
-THREADS="${THREADS:-50}"
-MAX_DELAY="${MAX_DELAY:-1000}"
+THREADS="${THREADS:-10}"
+MAX_DELAY="${MAX_DELAY:-300}"
 
+CACHEDIR="/cache"
 WORKDIR="/app"
 HAPROXY_DIR="$WORKDIR/haproxy"
 DARKHTTPD_DIR="$WORKDIR/darkhttpd"
@@ -102,20 +103,32 @@ haproxy_cmd() {
 haproxy -f "$HAPROXY_DIR/haproxy.cfg" -p "$HAPROXY_DIR/haproxy.pid" -D
 printf "Listening: PROXY port %s, HTTP port %s \n" "$PROXY_PORT" "$HTTP_PORT"
 
+COLD_START=1
+
 while true; do
-    curl --connect-timeout 5 --max-time 15 --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 60 \
-        -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt"
-    "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
-        --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" --speedtest --sort || true
+    if [ "$COLD_START" -eq 1 ] && [ -f "$CACHEDIR/configs.txt" ]; then
+        cp "$CACHEDIR/configs.txt" "$CONFIGS_FILE"
+        cp "$CONFIGS_FILE" "$DARKHTTPD_DIR/index.txt"
+        printf "Cold start. Using configs from cache.\n"
+        COLD_START=2
+    else
+        curl --connect-timeout 5 --max-time 15 --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 60 \
+            -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt"
 
-    sed -i '/^$/d' "$CONFIGS_FILE"
-    sed -i "1i # $(date)\n" "$CONFIGS_FILE"
-    echo >> "$CONFIGS_FILE"
-    cp "$CONFIGS_FILE" "$DARKHTTPD_DIR/index.txt"
+        "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
+            --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" \
+            --prescan --protocol vless --speedtest --sort || true
 
-    SOURCE_COUNT=$(grep -v '^[[:space:]]*#' "$WORKDIR/source.txt" | grep -c '.')
-    CONFIGS_COUNT=$(grep -v '^[[:space:]]*#' "$CONFIGS_FILE" | grep -c '.')
-    printf "Update configs: %s passed from %s total \n" "$CONFIGS_COUNT" "$SOURCE_COUNT"
+        sed -i '/^$/d' "$CONFIGS_FILE"
+        sed -i "1i # $(date)\n" "$CONFIGS_FILE"
+        echo >> "$CONFIGS_FILE"
+        cp "$CONFIGS_FILE" "$CACHEDIR/configs.txt"
+        cp "$CONFIGS_FILE" "$DARKHTTPD_DIR/index.txt"
+
+        SOURCE_COUNT=$(grep -v '^[[:space:]]*#' "$WORKDIR/source.txt" | grep -c '.')
+        CONFIGS_COUNT=$(grep -v '^[[:space:]]*#' "$CONFIGS_FILE" | grep -c '.')
+        printf "Update configs: %s passed from %s total \n" "$CONFIGS_COUNT" "$SOURCE_COUNT"
+    fi
 
     if [ "$PID_A" -eq 0 ]; then
         NEXT_PORT="$PORT_A"; PREV_PORT="$PORT_B"; PREV_PID="$PID_B"
@@ -145,5 +158,9 @@ while true; do
         PID_B="$NEXT_PID"; PID_A=0
     fi
 
-    sleep "$UPDATE_INTERVAL"
+    if [ "$COLD_START" -eq 2 ]; then
+        COLD_START=0
+    else
+        sleep "$UPDATE_INTERVAL"
+    fi
 done

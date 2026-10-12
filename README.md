@@ -18,8 +18,8 @@
 | `CHECK_URL` | `https://www.linkedin.com/robots.txt` | Proxy check URL to fetch |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
 | `SOURCE_URL` | https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt | Source URL |
-| `MAX_DELAY` | `1000` | Maximum allowed delay (ms) |
-| `THREADS` | `50` | Number of threads |
+| `MAX_DELAY` | `300` | Maximum allowed delay (ms) |
+| `THREADS` | `10` | Number of threads |
 
 ## Deployment (Podman Quadlet)
 
@@ -36,6 +36,7 @@ ContainerName=xray-knife-auto
 AutoUpdate=registry
 HostName=%H
 Timezone=local
+Volume=xray-knife-auto-cache:/cache:Z
 PublishPort=21170:21170
 PublishPort=21180:21180
 Environment=PROXY_PORT=21170
@@ -46,8 +47,8 @@ Environment=CHECK_INTERVAL=1
 Environment=CHECK_URL=https://www.linkedin.com/robots.txt
 Environment=UPDATE_INTERVAL=1h
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
-Environment=MAX_DELAY=1000
-Environment=THREADS=50
+Environment=MAX_DELAY=300
+Environment=THREADS=10
 
 [Service]
 Restart=on-failure
@@ -86,6 +87,7 @@ ExecStart=/usr/bin/podman run \
     --label io.containers.autoupdate=registry \
     --hostname %H \
     --tz local \
+    -v xray-knife-auto-cache:/cache:Z \
     -p 21170:21170 \
     -p 21180:21180 \
     -e PROXY_PORT=21170 \
@@ -96,8 +98,8 @@ ExecStart=/usr/bin/podman run \
     -e CHECK_URL=https://www.linkedin.com/robots.txt \
     -e UPDATE_INTERVAL=1h \
     -e SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt \
-    -e MAX_DELAY=1000 \
-    -e THREADS=50 \
+    -e MAX_DELAY=300 \
+    -e THREADS=10 \
     ghcr.io/biocoderh/xray-knife-auto:latest
 
 ExecStop=/usr/bin/podman stop -t 10 xray-knife-auto
