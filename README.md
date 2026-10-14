@@ -15,7 +15,7 @@
 | `HTTP_PORT` | `21180` | Port for the HTTP server, return plain/text configs |
 | `HTTP_SLUG` |  | Serve configs file behind HTTP path for security |
 | `CHECK_INTERVAL` | `1` | Proxy check interval in seconds |
-| `CHECK_URL` | `https://www.linkedin.com/robots.txt` | Proxy check URL to fetch |
+| `CHECK_URL` | `https://discord.com/api/v10/gateway` | Proxy check URL to fetch |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
 | `SOURCE_URL` | https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt | Source URL |
 | `MAX_DELAY` | `1000` | Maximum allowed delay (ms) |
@@ -44,7 +44,7 @@ Environment=PROXY_AUTH=
 Environment=HTTP_PORT=21180
 Environment=HTTP_SLUG=
 Environment=CHECK_INTERVAL=1
-Environment=CHECK_URL=https://www.linkedin.com/robots.txt
+Environment=CHECK_URL=https://discord.com/api/v10/gateway
 Environment=UPDATE_INTERVAL=1h
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
 Environment=MAX_DELAY=1000
@@ -94,7 +94,7 @@ ExecStart=/usr/bin/podman run \
     -e HTTP_PORT=21180 \
     -e HTTP_SLUG= \
     -e CHECK_INTERVAL=1 \
-    -e CHECK_URL=https://www.linkedin.com/robots.txt \
+    -e CHECK_URL=https://discord.com/api/v10/gateway \
     -e UPDATE_INTERVAL=1h \
     -e SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt \
     -e MAX_DELAY=1000 \
