@@ -3,11 +3,11 @@
 PROXY_PORT="${PROXY_PORT:-21170}"
 HTTP_PORT="${HTTP_PORT:-21180}"
 CHECK_INTERVAL="${CHECK_INTERVAL:-1}"
-CHECK_URL="${CHECK_URL:-https://discord.com/api/v10/gateway}"
+CHECK_URL="${CHECK_URL:-https://discord.com/robots.txt}"
 UPDATE_INTERVAL="${UPDATE_INTERVAL:-1h}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
 THREADS="${THREADS:-10}"
-MAX_DELAY="${MAX_DELAY:-300}"
+MAX_DELAY="${MAX_DELAY:-700}"
 
 CACHEDIR="/cache"
 WORKDIR="/app"
@@ -116,7 +116,8 @@ while true; do
             -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt"
 
         "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
-            --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" || true
+            --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" \
+            --speedtest --sort || true
 
         sed -i '/^$/d' "$CONFIGS_FILE"
         sed -i "1i # $(date)\n" "$CONFIGS_FILE"
@@ -137,9 +138,9 @@ while true; do
 
     "$XRAY_KNIFE_BIN" proxy inbound -f "$CONFIGS_FILE" \
         --port "$NEXT_PORT" --threads "$THREADS" --mdelay "$MAX_DELAY" \
-        --rotate 0 --blacklist-strikes 3 \
-        --health-check "$CHECK_INTERVAL" --health-url "$CHECK_URL" \
-        --inbound-config "${PROXY_PREFIX}127.0.0.1:$NEXT_PORT#Listener" --quiet &
+        --rotate 0 --blacklist-strikes 1 --blacklist-duration 600 \
+        --health-check "$CHECK_INTERVAL" --health-url "$CHECK_URL" --health-fail-threshold 1 \
+        --inbound-config "${PROXY_PREFIX}127.0.0.1:$NEXT_PORT#Listener" &
     NEXT_PID=$!
 
     haproxy_cmd "set server pool/$NEXT_PORT state ready"

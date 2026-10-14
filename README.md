@@ -15,10 +15,10 @@
 | `HTTP_PORT` | `21180` | Port for the HTTP server, return plain/text configs |
 | `HTTP_SLUG` |  | Serve configs file behind HTTP path for security |
 | `CHECK_INTERVAL` | `1` | Proxy check interval in seconds |
-| `CHECK_URL` | `https://discord.com/api/v10/gateway` | Proxy check URL to fetch |
+| `CHECK_URL` | `https://discord.com/robots.txt` | Proxy check URL to fetch |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
 | `SOURCE_URL` | https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt | Source URL |
-| `MAX_DELAY` | `300` | Maximum allowed delay (ms) |
+| `MAX_DELAY` | `700` | Maximum allowed delay (ms) |
 | `THREADS` | `10` | Number of threads |
 
 ## Deployment unprivileged (Podman Quadlet)
@@ -43,10 +43,10 @@ Environment=PROXY_AUTH=
 Environment=HTTP_PORT=21180
 Environment=HTTP_SLUG=
 Environment=CHECK_INTERVAL=1
-Environment=CHECK_URL=https://discord.com/api/v10/gateway
+Environment=CHECK_URL=https://discord.com/robots.txt
 Environment=UPDATE_INTERVAL=1h
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
-Environment=MAX_DELAY=300
+Environment=MAX_DELAY=700
 Environment=THREADS=10
 
 [Service]
@@ -93,10 +93,10 @@ ExecStart=/usr/bin/podman run \
     -e HTTP_PORT=21180 \
     -e HTTP_SLUG= \
     -e CHECK_INTERVAL=1 \
-    -e CHECK_URL=https://discord.com/api/v10/gateway \
+    -e CHECK_URL=https://discord.com/robots.txt \
     -e UPDATE_INTERVAL=1h \
     -e SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt \
-    -e MAX_DELAY=300 \
+    -e MAX_DELAY=700 \
     -e THREADS=10 \
     ghcr.io/biocoderh/xray-knife-auto:latest
 
