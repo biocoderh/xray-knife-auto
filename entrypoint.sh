@@ -7,7 +7,7 @@ CHECK_URL="${CHECK_URL:-https://discord.com/api/v10/gateway}"
 UPDATE_INTERVAL="${UPDATE_INTERVAL:-1h}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
 THREADS="${THREADS:-10}"
-MAX_DELAY="${MAX_DELAY:-1000}"
+MAX_DELAY="${MAX_DELAY:-300}"
 
 CACHEDIR="/cache"
 WORKDIR="/app"
@@ -115,11 +115,8 @@ while true; do
         curl --connect-timeout 5 --max-time 15 --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 60 \
             -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt"
 
-        grep -E '^(vless)://' "$WORKDIR/source.txt" > "$WORKDIR/vless.txt" || true
-
-        "$XRAY_KNIFE_BIN" http -f "$WORKDIR/vless.txt" -o "$CONFIGS_FILE" \
-            --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" \
-            --prescan --speedtest --sort || true
+        "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
+            --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" || true
 
         sed -i '/^$/d' "$CONFIGS_FILE"
         sed -i "1i # $(date)\n" "$CONFIGS_FILE"
