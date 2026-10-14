@@ -7,7 +7,7 @@ CHECK_URL="${CHECK_URL:-https://discord.com/robots.txt}"
 UPDATE_INTERVAL="${UPDATE_INTERVAL:-1h}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
 THREADS="${THREADS:-10}"
-MAX_DELAY="${MAX_DELAY:-700}"
+MAX_DELAY="${MAX_DELAY:-300}"
 
 CACHEDIR="/cache"
 WORKDIR="/app"
@@ -138,9 +138,9 @@ while true; do
 
     "$XRAY_KNIFE_BIN" proxy inbound -f "$CONFIGS_FILE" \
         --port "$NEXT_PORT" --threads "$THREADS" --mdelay "$MAX_DELAY" \
-        --rotate 0 --blacklist-strikes 1 --blacklist-duration 600 \
+        --rotate 0 --blacklist-strikes 1 --blacklist-duration 3600 \
         --health-check "$CHECK_INTERVAL" --health-url "$CHECK_URL" --health-fail-threshold 1 \
-        --inbound-config "${PROXY_PREFIX}127.0.0.1:$NEXT_PORT#Listener" &
+        --inbound-config "${PROXY_PREFIX}127.0.0.1:$NEXT_PORT#Listener" --quiet &
     NEXT_PID=$!
 
     haproxy_cmd "set server pool/$NEXT_PORT state ready"

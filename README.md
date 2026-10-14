@@ -18,7 +18,7 @@
 | `CHECK_URL` | `https://discord.com/robots.txt` | Proxy check URL to fetch |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
 | `SOURCE_URL` | https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt | Source URL |
-| `MAX_DELAY` | `700` | Maximum allowed delay (ms) |
+| `MAX_DELAY` | `300` | Maximum allowed delay (ms) |
 | `THREADS` | `10` | Number of threads |
 
 ## Deployment unprivileged (Podman Quadlet)
@@ -46,7 +46,7 @@ Environment=CHECK_INTERVAL=1
 Environment=CHECK_URL=https://discord.com/robots.txt
 Environment=UPDATE_INTERVAL=1h
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
-Environment=MAX_DELAY=700
+Environment=MAX_DELAY=300
 Environment=THREADS=10
 
 [Service]
@@ -96,7 +96,7 @@ ExecStart=/usr/bin/podman run \
     -e CHECK_URL=https://discord.com/robots.txt \
     -e UPDATE_INTERVAL=1h \
     -e SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt \
-    -e MAX_DELAY=700 \
+    -e MAX_DELAY=300 \
     -e THREADS=10 \
     ghcr.io/biocoderh/xray-knife-auto:latest
 
