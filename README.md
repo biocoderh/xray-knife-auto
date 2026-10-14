@@ -36,9 +36,8 @@ ContainerName=xray-knife-auto
 AutoUpdate=registry
 HostName=%H
 Timezone=local
+Network=host
 Volume=xray-knife-auto-cache:/cache:Z
-PublishPort=21170:21170
-PublishPort=21180:21180
 Environment=PROXY_PORT=21170
 Environment=PROXY_AUTH=
 Environment=HTTP_PORT=21180
