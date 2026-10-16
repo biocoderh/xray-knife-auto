@@ -7,7 +7,7 @@ CHECK_URL="${CHECK_URL:-https://discord.com/robots.txt}"
 UPDATE_INTERVAL="${UPDATE_INTERVAL:-1h}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
 THREADS="${THREADS:-10}"
-MAX_DELAY="${MAX_DELAY:-300}"
+MAX_DELAY="${MAX_DELAY:-600}"
 
 CACHEDIR="/cache"
 WORKDIR="/app"
@@ -22,7 +22,7 @@ PORT_B=21172
 PID_A=0
 PID_B=0
 
-REAL_IP=$(curl -s api.ipify.org)
+REAL_IP=$(curl -s --connect-timeout 5 api.ipify.org 2>/dev/null || echo "127.0.0.1")
 PROXY_PREFIX="socks5://${PROXY_AUTH:+${PROXY_AUTH}@}"
 PROXY_URL="$PROXY_PREFIX$REAL_IP:$PROXY_PORT"
 HTTP_URL="http://$REAL_IP:$HTTP_PORT/$HTTP_SLUG"
@@ -115,7 +115,9 @@ while true; do
         curl --connect-timeout 5 --max-time 15 --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 60 \
             -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt"
 
-        "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
+        grep -v -i -E '(🇷🇺|%F0%9F%87%B7%F0%9F%87%BA|Russia|Россия)' "$WORKDIR/source.txt" > "$WORKDIR/filtered.txt" || true
+
+        "$XRAY_KNIFE_BIN" http -f "$WORKDIR/filtered.txt" -o "$CONFIGS_FILE" \
             --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" \
             --speedtest --sort || true
 
@@ -138,8 +140,8 @@ while true; do
 
     "$XRAY_KNIFE_BIN" proxy inbound -f "$CONFIGS_FILE" \
         --port "$NEXT_PORT" --threads "$THREADS" --mdelay "$MAX_DELAY" \
-        --rotate 0 --blacklist-strikes 1 --blacklist-duration 3600 \
-        --health-check "$CHECK_INTERVAL" --health-url "$CHECK_URL" --health-fail-threshold 1 \
+        --rotate 0 --blacklist-strikes 3 --blacklist-duration 300 \
+        --health-check "$CHECK_INTERVAL" --health-url "$CHECK_URL" --health-fail-threshold 2 \
         --inbound-config "${PROXY_PREFIX}127.0.0.1:$NEXT_PORT#Listener" --quiet &
     NEXT_PID=$!
 
