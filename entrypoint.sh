@@ -113,7 +113,7 @@ while true; do
         COLD_START=2
     else
         curl --connect-timeout 5 --max-time 15 --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 60 \
-            -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt"
+            -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt" || continue
 
         "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
             --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" \
@@ -138,8 +138,8 @@ while true; do
 
     "$XRAY_KNIFE_BIN" proxy inbound -f "$CONFIGS_FILE" \
         --port "$NEXT_PORT" --threads "$THREADS" --mdelay "$MAX_DELAY" \
-        --rotate 0 --blacklist-strikes 2 --blacklist-duration 300 \
-        --health-check "$CHECK_INTERVAL" --health-url "$CHECK_URL" --health-fail-threshold 2 \
+        --rotate 0 --blacklist-strikes 1 --blacklist-duration 300 \
+        --health-check "$CHECK_INTERVAL" --health-url "$CHECK_URL" --health-fail-threshold 1 \
         --inbound-config "${PROXY_PREFIX}127.0.0.1:$NEXT_PORT#Listener" --quiet &
     NEXT_PID=$!
 
