@@ -3,7 +3,7 @@
 PROXY_PORT="${PROXY_PORT:-21170}"
 HTTP_PORT="${HTTP_PORT:-21180}"
 CHECK_INTERVAL="${CHECK_INTERVAL:-1}"
-CHECK_URL="${CHECK_URL:-https://www.instagram.com/robots.txt}"
+CHECK_URL="${CHECK_URL:-https://www.notion.so/robots.txt}"
 UPDATE_INTERVAL="${UPDATE_INTERVAL:-1h}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
 THREADS="${THREADS:-10}"
@@ -115,7 +115,9 @@ while true; do
         curl --connect-timeout 5 --max-time 15 --retry 5 --retry-all-errors --retry-delay 3 --retry-max-time 60 \
             -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt" || continue
 
-        "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
+         grep -v 'type=ws' "$WORKDIR/source.txt" > "$WORKDIR/filtered.txt" || true
+
+        "$XRAY_KNIFE_BIN" http -f "$WORKDIR/filtered.txt" -o "$CONFIGS_FILE" \
             --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" \
             --speedtest --sort || true
 
