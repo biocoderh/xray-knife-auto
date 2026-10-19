@@ -11,15 +11,19 @@
 | Variable | Default | Description |
 |---|---|---|
 | `PROXY_PORT` | `21170` | Port for the proxy server |
-| `PROXY_AUTH` |  | Proxy inbound user:pass base64 encoded, empty no auth |
+| `PROXY_AUTH` |  | Proxy inbound user:pass, plain text or base64 encoded (empty = no auth) |
 | `HTTP_PORT` | `21180` | Port for the HTTP server, return plain/text configs |
-| `HTTP_SLUG` |  | Serve configs file behind HTTP path for security |
-| `CHECK_INTERVAL` | `1` | Proxy check interval in seconds |
-| `CHECK_URL` | `https://www.notion.so/robots.txt` | Proxy check URL to fetch |
-| `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
+| `HTTP_SLUG` |  | Serve configs file behind HTTP path for security (empty = any path) |
 | `SOURCE_URL` | https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt | Source URL |
-| `MAX_DELAY` | `600` | Maximum allowed delay (ms) |
+| `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
 | `THREADS` | `10` | Number of threads |
+| `MAX_DELAY` | `600` | Maximum allowed delay (ms) |
+| `CHECK_URL` | `https://www.notion.so/robots.txt` | Proxy check URL to fetch |
+| `CHECK_INTERVAL` | `3` | Proxy check interval in seconds (0 = disabled) |
+| `CHECK_THRESHOLD` | `3` | Proxy check failures threshold |
+| `ROTATE` | `0` | Auto rotate proxy every n seconds (0 = disabled) |
+| `BLACKLIST_STRIKES` | `3` | Failures before blacklisting a config (0 = disabled) |
+| `BLACKLIST_DURATION` | `600` | Seconds to blacklist a failed config |
 
 ## Deployment unprivileged (Podman Quadlet)
 
@@ -42,12 +46,16 @@ Environment=PROXY_PORT=21170
 Environment=PROXY_AUTH=
 Environment=HTTP_PORT=21180
 Environment=HTTP_SLUG=
-Environment=CHECK_INTERVAL=1
-Environment=CHECK_URL=https://www.notion.so/robots.txt
-Environment=UPDATE_INTERVAL=1h
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
-Environment=MAX_DELAY=600
+Environment=UPDATE_INTERVAL=1h
 Environment=THREADS=10
+Environment=MAX_DELAY=600
+Environment=CHECK_URL=https://www.notion.so/robots.txt
+Environment=CHECK_INTERVAL=3
+Environment=CHECK_THRESHOLD=3
+Environment=ROTATE=0
+Environment=BLACKLIST_STRIKES=3
+Environment=BLACKLIST_DURATION=600
 
 [Service]
 Restart=on-failure
@@ -92,12 +100,16 @@ ExecStart=/usr/bin/podman run \
     -e PROXY_AUTH= \
     -e HTTP_PORT=21180 \
     -e HTTP_SLUG= \
-    -e CHECK_INTERVAL=1 \
-    -e CHECK_URL=https://www.notion.so/robots.txt \
-    -e UPDATE_INTERVAL=1h \
     -e SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt \
-    -e MAX_DELAY=600 \
+    -e UPDATE_INTERVAL=1h \
     -e THREADS=10 \
+    -e MAX_DELAY=600 \
+    -e CHECK_URL=https://www.notion.so/robots.txt \
+    -e CHECK_INTERVAL=3 \
+    -e CHECK_THRESHOLD=3 \
+    -e ROTATE=0 \
+    -e BLACKLIST_STRIKES=3 \
+    -e BLACKLIST_DURATION=600 \
     ghcr.io/biocoderh/xray-knife-auto:latest
 
 ExecStop=/usr/bin/podman stop -t 10 xray-knife-auto

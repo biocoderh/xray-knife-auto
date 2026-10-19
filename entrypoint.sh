@@ -2,12 +2,16 @@
 
 PROXY_PORT="${PROXY_PORT:-21170}"
 HTTP_PORT="${HTTP_PORT:-21180}"
-CHECK_INTERVAL="${CHECK_INTERVAL:-1}"
-CHECK_URL="${CHECK_URL:-https://www.notion.so/robots.txt}"
-UPDATE_INTERVAL="${UPDATE_INTERVAL:-1h}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
+UPDATE_INTERVAL="${UPDATE_INTERVAL:-1h}"
 THREADS="${THREADS:-10}"
 MAX_DELAY="${MAX_DELAY:-600}"
+CHECK_URL="${CHECK_URL:-https://www.notion.so/robots.txt}"
+CHECK_INTERVAL="${CHECK_INTERVAL:-3}"
+CHECK_THRESHOLD="${CHECK_THRESHOLD:-3}"
+ROTATE="${ROTATE:-0}"
+BLACKLIST_STRIKES="${BLACKLIST_STRIKES:-3}"
+BLACKLIST_DURATION="${BLACKLIST_DURATION:-600}"
 
 CACHEDIR="/cache"
 WORKDIR="/app"
@@ -140,9 +144,9 @@ while true; do
 
     "$XRAY_KNIFE_BIN" proxy inbound -f "$CONFIGS_FILE" \
         --port "$NEXT_PORT" --threads "$THREADS" --mdelay "$MAX_DELAY" \
-        --rotate 0 --blacklist-strikes 1 --blacklist-duration 300 \
-        --health-check "$CHECK_INTERVAL" --health-url "$CHECK_URL" --health-fail-threshold 1 \
-        --inbound-config "${PROXY_PREFIX}127.0.0.1:$NEXT_PORT#Listener" --quiet &
+        --rotate "$ROTATE" --blacklist-strikes "$BLACKLIST_STRIKES" --blacklist-duration "$BLACKLIST_DURATION" \
+        --health-url "$CHECK_URL" --health-check "$CHECK_INTERVAL" --health-fail-threshold "$CHECK_THRESHOLD" \
+        --inbound-config "${PROXY_PREFIX}127.0.0.1:$NEXT_PORT" --quiet &
     NEXT_PID=$!
 
     haproxy_cmd "set server pool/$NEXT_PORT state ready"
