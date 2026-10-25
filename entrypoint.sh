@@ -10,7 +10,7 @@ CHECK_URL="${CHECK_URL:-https://www.notion.so/robots.txt}"
 CHECK_INTERVAL="${CHECK_INTERVAL:-1}"
 CHECK_THRESHOLD="${CHECK_THRESHOLD:-1}"
 ROTATE="${ROTATE:-0}"
-BLACKLIST_STRIKES="${BLACKLIST_STRIKES:-1}"
+BLACKLIST_STRIKES="${BLACKLIST_STRIKES:-0}"
 BLACKLIST_DURATION="${BLACKLIST_DURATION:-600}"
 
 CACHEDIR="/cache"
@@ -105,7 +105,7 @@ haproxy_cmd() {
 }
 
 haproxy -f "$HAPROXY_DIR/haproxy.cfg" -p "$HAPROXY_DIR/haproxy.pid" -D
-printf "\n Listening: PROXY port %s, HTTP port %s \n" "$PROXY_PORT" "$HTTP_PORT"
+printf "\nListening: PROXY port %s, HTTP port %s \n" "$PROXY_PORT" "$HTTP_PORT"
 
 COLD_START=1
 
@@ -120,7 +120,7 @@ while true; do
             -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt" || continue
 
         SOURCE_COUNT=$(grep -v '^[[:space:]]*#' "$WORKDIR/source.txt" | grep -c '.')
-        printf "\n Cheking %s configs... \n" "$SOURCE_COUNT"
+        printf "\nCheking %s configs... \n" "$SOURCE_COUNT"
 
         "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
             --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" \
