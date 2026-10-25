@@ -20,7 +20,7 @@
 | `MAX_DELAY` | `750` | Maximum allowed delay (ms) |
 | `CHECK_URL` | `https://www.notion.so/robots.txt` | Proxy check URL to fetch |
 | `CHECK_INTERVAL` | `1` | Proxy check interval in seconds (0 = disabled) |
-| `CHECK_THRESHOLD` | `1` | Proxy check failures threshold |
+| `CHECK_THRESHOLD` | `3` | Proxy check failures threshold |
 | `ROTATE` | `0` | Auto rotate proxy every n seconds (0 = disabled) |
 | `BLACKLIST_STRIKES` | `0` | Failures before blacklisting a config (0 = disabled) |
 | `BLACKLIST_DURATION` | `600` | Seconds to blacklist a failed config |
@@ -52,7 +52,7 @@ Environment=THREADS=10
 Environment=MAX_DELAY=750
 Environment=CHECK_URL=https://www.notion.so/robots.txt
 Environment=CHECK_INTERVAL=1
-Environment=CHECK_THRESHOLD=1
+Environment=CHECK_THRESHOLD=3
 Environment=ROTATE=0
 Environment=BLACKLIST_STRIKES=0
 Environment=BLACKLIST_DURATION=600
@@ -106,7 +106,7 @@ ExecStart=/usr/bin/podman run \
     -e MAX_DELAY=750 \
     -e CHECK_URL=https://www.notion.so/robots.txt \
     -e CHECK_INTERVAL=1 \
-    -e CHECK_THRESHOLD=1 \
+    -e CHECK_THRESHOLD=3 \
     -e ROTATE=0 \
     -e BLACKLIST_STRIKES=0 \
     -e BLACKLIST_DURATION=600 \
