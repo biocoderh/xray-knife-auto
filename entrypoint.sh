@@ -4,7 +4,7 @@ PROXY_PORT="${PROXY_PORT:-21170}"
 HTTP_PORT="${HTTP_PORT:-21180}"
 SOURCE_URL="${SOURCE_URL:-https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt}"
 UPDATE_INTERVAL="${UPDATE_INTERVAL:-1h}"
-THREADS="${THREADS:-1}"
+THREADS="${THREADS:-10}"
 MAX_DELAY="${MAX_DELAY:-750}"
 CHECK_URL="${CHECK_URL:-https://www.notion.so/robots.txt}"
 CHECK_INTERVAL="${CHECK_INTERVAL:-1}"
@@ -105,7 +105,7 @@ haproxy_cmd() {
 }
 
 haproxy -f "$HAPROXY_DIR/haproxy.cfg" -p "$HAPROXY_DIR/haproxy.pid" -D
-printf "Listening: PROXY port %s, HTTP port %s \n" "$PROXY_PORT" "$HTTP_PORT"
+printf "\n Listening: PROXY port %s, HTTP port %s \n" "$PROXY_PORT" "$HTTP_PORT"
 
 COLD_START=1
 
@@ -120,7 +120,7 @@ while true; do
             -fsSL "$SOURCE_URL" -o "$WORKDIR/source.txt" || continue
 
         SOURCE_COUNT=$(grep -v '^[[:space:]]*#' "$WORKDIR/source.txt" | grep -c '.')
-        printf "Cheking %s configs... \n" "$SOURCE_COUNT"
+        printf "\n Cheking %s configs... \n" "$SOURCE_COUNT"
 
         "$XRAY_KNIFE_BIN" http -f "$WORKDIR/source.txt" -o "$CONFIGS_FILE" \
             --threads "$THREADS" --mdelay "$MAX_DELAY" --url "$CHECK_URL" \
