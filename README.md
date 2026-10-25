@@ -16,13 +16,13 @@
 | `HTTP_SLUG` |  | Serve configs file behind HTTP path for security (empty = any path) |
 | `SOURCE_URL` | https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt | Source URL |
 | `UPDATE_INTERVAL` | `1h` | Update interval (sleep NUMBER\[SUFFIX\]) |
-| `THREADS` | `10` | Number of threads |
-| `MAX_DELAY` | `300` | Maximum allowed delay (ms) |
+| `THREADS` | `1` | Number of threads |
+| `MAX_DELAY` | `750` | Maximum allowed delay (ms) |
 | `CHECK_URL` | `https://www.notion.so/robots.txt` | Proxy check URL to fetch |
-| `CHECK_INTERVAL` | `2` | Proxy check interval in seconds (0 = disabled) |
-| `CHECK_THRESHOLD` | `2` | Proxy check failures threshold |
+| `CHECK_INTERVAL` | `1` | Proxy check interval in seconds (0 = disabled) |
+| `CHECK_THRESHOLD` | `1` | Proxy check failures threshold |
 | `ROTATE` | `0` | Auto rotate proxy every n seconds (0 = disabled) |
-| `BLACKLIST_STRIKES` | `2` | Failures before blacklisting a config (0 = disabled) |
+| `BLACKLIST_STRIKES` | `1` | Failures before blacklisting a config (0 = disabled) |
 | `BLACKLIST_DURATION` | `600` | Seconds to blacklist a failed config |
 
 ## Deployment unprivileged (Podman Quadlet)
@@ -48,13 +48,13 @@ Environment=HTTP_PORT=21180
 Environment=HTTP_SLUG=
 Environment=SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt
 Environment=UPDATE_INTERVAL=1h
-Environment=THREADS=10
-Environment=MAX_DELAY=300
+Environment=THREADS=1
+Environment=MAX_DELAY=750
 Environment=CHECK_URL=https://www.notion.so/robots.txt
-Environment=CHECK_INTERVAL=2
-Environment=CHECK_THRESHOLD=2
+Environment=CHECK_INTERVAL=1
+Environment=CHECK_THRESHOLD=1
 Environment=ROTATE=0
-Environment=BLACKLIST_STRIKES=2
+Environment=BLACKLIST_STRIKES=1
 Environment=BLACKLIST_DURATION=600
 
 [Service]
@@ -102,13 +102,13 @@ ExecStart=/usr/bin/podman run \
     -e HTTP_SLUG= \
     -e SOURCE_URL=https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt \
     -e UPDATE_INTERVAL=1h \
-    -e THREADS=10 \
-    -e MAX_DELAY=300 \
+    -e THREADS=1 \
+    -e MAX_DELAY=750 \
     -e CHECK_URL=https://www.notion.so/robots.txt \
-    -e CHECK_INTERVAL=2 \
-    -e CHECK_THRESHOLD=2 \
+    -e CHECK_INTERVAL=1 \
+    -e CHECK_THRESHOLD=1 \
     -e ROTATE=0 \
-    -e BLACKLIST_STRIKES=2 \
+    -e BLACKLIST_STRIKES=1 \
     -e BLACKLIST_DURATION=600 \
     ghcr.io/biocoderh/xray-knife-auto:latest
 
